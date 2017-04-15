@@ -2,12 +2,11 @@
 Bot bet Freebitcoin
 ![alt text](screenshots/bootFREEBETCO.png "screenshot")
 
-Suporta:
-> -Chart otimizado.
+> **Suporta:**
+> - Chart otimizado.
+> - Dois modos de aposta: Multply e Fibonacci
 
-> -Por enquanto so multiplica o valor por x2 quando perde para cobrir a perda.
 
-Vai suportar:
-> -Chart melhorado.
-
-> -Várias maneiras de apostar como: fibonacci, Martingale, Labouchere e outros.
+> **Vai suportar:**
+> - Chart melhorado.
+> - Várias maneiras de apostar como: fibonacci, Martingale, Labouchere e outros.
