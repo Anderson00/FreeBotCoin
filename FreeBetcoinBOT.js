@@ -35,14 +35,30 @@ var $loButton = $('#double_your_btc_bet_lo_button'),
 var container = $("#bet_history_table");//Container do plot
 var chart = null;
 var valorInicial = 0;
-var profit = 0;
-var contador = 0;
+var profit = 0;//valor ganho na sessão atual
+var contador = 0, //conta o numero de bets
+    count_lose = 1, //numero de perdas seguidas
+    total_lose = 0, //total de perdas
+    total_wins = 0;
                 
 function multiply(){
         var current = $('#double_your_btc_stake').val();
         var multiply = (current * 2).toFixed(8);
         $('#double_your_btc_stake').val(multiply);
 }
+
+function fibonacci(){
+        //var current = $('#double_your_btc_stake').val();
+        var total = r_fibonacci(count_lose) * startValue;
+        $('#double_your_btc_stake').val(total);
+        
+        function r_fibonacci(n){
+                if(n == 1 || n == 2)
+                        return 1;
+                return r_fibonacci(n - 1) + r_fibonacci(n - 2);
+        }
+}
+
 function getRandomWait(){
         var wait = Math.floor(Math.random() * maxWait ) + 100;
         console.log('Waiting for ' + wait + 'ms before next bet.');
@@ -86,6 +102,7 @@ function stopGame(){
         stopped = true;
 }
 function reset(){
+        count_lose = 1;
         $('#double_your_btc_stake').val(startValue);
 }
 // quick and dirty hack if you have very little bitcoins like 0.0000001
@@ -119,8 +136,9 @@ $('#double_your_btc_bet_lose').bind("DOMSubtreeModified",function(event){
                 addData([contador++,profit]);
                 console.log(profit.toFixed(8));
                 //console.log('You LOST! Multiplying your bet and betting again.');
-               
+                console.log(count_lose++);
                 multiply();
+                //fibonacci();
                 setTimeout(function(){
                         $loButton.trigger('click');
                 }, getRandomWait());
