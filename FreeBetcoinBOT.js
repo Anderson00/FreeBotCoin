@@ -18,8 +18,9 @@ Licensed under the MIT license.
 
 
 /* 1
- *Author:desconhecido;
- *Desc:Parte que cuida das apostas;
+ *Author:Anderson;
+ *Desc:Parte que cuida das apostas
+ *     melhoria do codigo do site http://earning1btc.blogspot.com.br/2016/02/earn-1-btc-freebitcoin-script-100.html;
  * 
 */
 
