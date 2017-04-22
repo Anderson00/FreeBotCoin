@@ -1,13 +1,15 @@
-# BotFreebitcoin
-Bot bet Freebitcoin
+# FreeBotCoin
+Bot bet
 ![alt text](screenshots/bootFREEBETCO.png "screenshot")
 
-> **Suporta:**
-> - Chart otimizado.
-> - Dois modos de aposta: Multply e Fibonacci.
+> **Suports:**
+> - Chart.
+> - Sites: FreeBitco.in (for a while).
+> - Two betting modes: Multply e Fibonacci.
 
 
-> **Vai suportar:**
-> - Chart melhorado.
-> - Várias maneiras de apostar como: fibonacci, Martingale, Labouchere e outros.
-> - Menu abaixo do chart com opções de escolha de modos de aposta e outras opções.
+> **Will supports:**
+> - Chart improved.
+> - Other betting sites like: 999dice, ESPORTSPLUS.ME, csgo roll and others.
+> - Several ways to bet like: fibonacci, Martingale, Labouchere and others.
+> - Menu.
