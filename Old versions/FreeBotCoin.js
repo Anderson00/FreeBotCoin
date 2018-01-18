@@ -51,26 +51,14 @@ function FreeBotCoin(obj){ // obj contains variables
 
         var defaultValues = {
             startValue: '0.00000001',
-            site: 'freebitco.in',
             mode: 'multiply',
             stopPercentage: 0.001,
             maxWait: 500,     
             stopBefore: 3, // In Minutes  
-            sites:{
-                "freebitco.in":{
-                    $loButton: $('#double_your_btc_bet_lo_button'),
-                    $hiButton: $('#double_your_btc_bet_hi_button'),
-                    container: $("#bet_history_table"), // Chart Container
-                    betAmount: $('#double_your_btc_stake')
-                },
-                "999dice":{
-                    $loButton: $('#double_your_btc_bet_lo_button'),
-                    $hiButton: $('#double_your_btc_bet_hi_button'),
-                    container: $("#bet_history_table"), // Chart Container
-                    betAmount: $('#double_your_btc_stake')
-                }
-            },
-            
+            $loButton: $('#double_your_btc_bet_lo_button'),
+            $hiButton: $('#double_your_btc_bet_hi_button'),
+            container: $("#bet_history_table"), // Chart Container
+            betAmount: $('#double_your_btc_stake')
         };
         
         // You can also receive properties for custom use
@@ -112,7 +100,7 @@ function FreeBotCoin(obj){ // obj contains variables
                     this.initialValue = parseFloat($("#balance").html());
                     console.log(this.initialValue);
                     if(this.chart == null){
-                            this.sites[this.site].container.prepend("<div class='plot'></div>");
+                            this.container.prepend("<div class='plot'></div>");
                             $(".plot").css({"width":"100%","height":"300px"});
                             var options = {
                                     series: {
@@ -133,7 +121,7 @@ function FreeBotCoin(obj){ // obj contains variables
 
                     function showLogs(){
                         console.clear();
-                        ref.wagered += parseFloat(ref.sites[ref.site].betAmount.val());
+                        ref.wagered += parseFloat(ref.betAmount.val());
                         console.log("Beginning Balance: " + ref.initialValue);
                         console.log("Round: " + ref.totalBets + " / " + undefined);
                         console.log("Profit: " + ref.profit.toFixed(8) + " BTC");
@@ -151,8 +139,8 @@ function FreeBotCoin(obj){ // obj contains variables
                             {             
                                     ref.total_loses++;
                                     
-                                    if(ref.highest_lose < parseFloat(ref.sites[ref.site].betAmount.val())){
-                                        ref.highest_lose = parseFloat(ref.sites[ref.site].betAmount.val());
+                                    if(ref.highest_lose < parseFloat(ref.betAmount.val())){
+                                        ref.highest_lose = parseFloat(ref.betAmount.val());
                                     }                                    
 
                                     showLogs();
@@ -165,7 +153,7 @@ function FreeBotCoin(obj){ // obj contains variables
                                     }
 
                                     setTimeout(function(){
-                                            ref.sites[ref.site].$loButton.trigger('click');
+                                            ref.$loButton.trigger('click');
                                     }, ref.getRandomWait());
                             }
                     });
@@ -178,8 +166,8 @@ function FreeBotCoin(obj){ // obj contains variables
                             {
                                     ref.total_wins++;
 
-                                    if(ref.highest_win < parseFloat(ref.sites[ref.site].betAmount.val())){
-                                        ref.highest_win = parseFloat(ref.sites[ref.site].betAmount.val());
+                                    if(ref.highest_win < parseFloat(ref.betAmount.val())){
+                                        ref.highest_win = parseFloat(ref.betAmount.val());
                                     }
 
                                     showLogs();
@@ -196,7 +184,6 @@ function FreeBotCoin(obj){ // obj contains variables
                                             ref.reset();
                                             if( ref.stopped )
                                             {
-                                                    console.log("%cStopped",'color : #FF0000');
                                                     ref.stopped = false;
                                                     return false;
                                             }
@@ -206,14 +193,14 @@ function FreeBotCoin(obj){ // obj contains variables
                                             console.log('You WON! Betting again');
                                     }
                                     setTimeout(function(){
-                                            ref.sites[ref.site].$loButton.trigger('click');
+                                            ref.$loButton.trigger('click');
                                     }, ref.getRandomWait());
                             }
                     });
 
 
                     this.reset();
-                    this.sites[this.site].$loButton.trigger('click');
+                    this.$loButton.trigger('click');
                     
                     
 
@@ -300,4 +287,4 @@ function FreeBotCoin(obj){ // obj contains variables
     } 
         
 }
-var freeBotCoin = new FreeBotCoin().startGame();
+new FreeBotCoin().startGame();
