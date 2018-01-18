@@ -1,6 +1,8 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
+*.js linguist-language=javascript
+
 # Custom for Visual Studio
 *.cs     diff=csharp
 
