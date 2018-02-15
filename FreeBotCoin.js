@@ -36,7 +36,8 @@ function FreeBotCoin(obj){ // obj contains variables
     if(this != window){
         // Do not change these values
         var privateVariables = {
-            stopped: false,
+            stopped: false, //Stop only when win
+            stop:false, //Stop immediately
             chart: null,
             initialValue: 0,
             profit: 0, // Amount win on this session
@@ -46,51 +47,249 @@ function FreeBotCoin(obj){ // obj contains variables
             total_wins: 0,
             total_loses: 0,
             highest_win: 0,
-            highest_lose: 0
+            highest_lose: 0,
+            site: {"freebitco":0, "999dice": 1, "primedice": 2}
         };
+
+        Object.freeze(privateVariables.site); // converting to "Const"
 
         var defaultValues = {
             startValue: '0.00000001',
-            site: 'freebitco.in',
             mode: 'multiply',
             stopPercentage: 0.001,
             maxWait: 500,     
             stopBefore: 3, // In Minutes  
             sites:{
-                "freebitco.in":{
+                "freebitco":{
+                	  balance: $('#balance'),
                     $loButton: $('#double_your_btc_bet_lo_button'),
                     $hiButton: $('#double_your_btc_bet_hi_button'),
                     container: $("#bet_history_table"), // Chart Container
-                    betAmount: $('#double_your_btc_stake')
+                    betAmount: $('#double_your_btc_stake'),
+                     gameLoop: function(){ 
+
+	                    // Unbind old shit
+	                    $('#double_your_btc_bet_lose').unbind();
+	                    $('#double_your_btc_bet_win').unbind();
+	                    // Loser
+	                    $('#double_your_btc_bet_lose').bind("DOMSubtreeModified",function(event){ // DOMSubtreeModified deprecated
+	                            if( $(event.currentTarget).is(':contains("lose")') )
+	                            {             
+	                                ref.total_loses++;
+	                                
+	                                if(ref.highest_lose < parseFloat(ref.__objects.betAmount.val())){
+	                                    ref.highest_lose = parseFloat(ref.__objects.betAmount.val());
+	                                }                                    
+
+	                                ref.showLogs();
+	                                ref.profit = parseFloat(ref.__objects.balance.html()) - ref.initialValue;
+	                                ref.addData([ref.totalBets++,ref.profit]);
+	                                
+	                                if(!ref.stop){
+		                                // Mode
+		                                if(!ref.modes[ref.mode]()){
+		                                    ref.mode = 'multiply';
+		                                }
+
+		                                setTimeout(function(){
+		                                        ref.__objects.$loButton.trigger('click');
+		                                }, ref.getRandomWait());
+		                            }else{
+		                            	ref.stop = false;
+		                            	ref.stopped = false;
+		                            	console.log("%cStopped",'color : #FF0000');
+		                            	return;
+		                            }
+	                            }
+	                    });
+
+
+	                   
+	                    // Winner
+	                    $('#double_your_btc_bet_win').bind("DOMSubtreeModified",function(event){
+	                            if( $(event.currentTarget).is(':contains("win")') )
+	                            {
+	                                ref.total_wins++;
+
+	                                if(ref.highest_win < parseFloat(ref.__objects.betAmount.val())){
+	                                    ref.highest_win = parseFloat(ref.__objects.betAmount.val());
+	                                }
+
+	                                ref.showLogs();
+	                                ref.profit = parseFloat(ref.__objects.balance.html()) - ref.initialValue;
+	                                ref.addData([ref.totalBets++,ref.profit]);
+	                                
+	                                if( ref.stopBeforeRedirect() )
+	                                {
+	                                	return;
+	                                }
+	                                if( ref.iHaveEnoughMoni() )
+	                                {
+	                                        //console.log('You WON! But don\'t be greedy. Restarting!');
+	                                        ref.reset();
+	                                        if( ref.stopped )
+	                                        {
+	                                        	console.log("%cStopped",'color : #FF0000');
+	                                        	ref.stopped = false;
+	                                        	return false;
+	                                        }
+	                                }
+	                                else
+	                                {
+	                                	console.log('You WON! Betting again');
+	                                }
+	                                setTimeout(function(){
+	                                        ref.__objects.$loButton.trigger('click');
+	                                }, ref.getRandomWait());
+	                            }
+	                    });
+
+
+	                    ref.reset();
+	                    ref.__objects.$loButton.trigger('click');
+                     }
                 },
                 "999dice":{
-                    $loButton: $('#double_your_btc_bet_lo_button'),
+                	  balance: $('.UserBalance'),
+                    $loButton: $('#BetLowButton'),
+                    $hiButton: $('#BetHighButton'),
+                    container: $("#ActionBoxContainer"), // Chart Container
+                    betAmount: $('#BetSizeInput'),
+                     gameLoop: function(){
+
+                     	var originalAddClass = jQuery.fn.addClass;
+
+                     	jQuery.fn.addClass = function(){
+                     		var result = originalAddClass.apply(this, arguments);
+
+                     		jQuery(this).trigger("classChanged");
+
+                     		return result;
+                     	}
+
+                     	$('#LastBetInfoContainer').unbind();
+
+                     	$('#LastBetInfoContainer').bind("classChanged", function(event){
+                     		console.log(event);
+                     		if($(event.currentTarget).attr('class') == "BadNumber"){// Lose
+                     			ref.total_loses++;
+	                                
+	                            if(ref.highest_lose < parseFloat(ref.__objects.betAmount.val())){
+	                                ref.highest_lose = parseFloat(ref.__objects.betAmount.val());
+	                            }  
+
+	                            ref.showLogs();
+	                            ref.profit = parseFloat(ref.__objects.balance.html()) - ref.initialValue;
+	                            ref.addData([ref.totalBets++,ref.profit]);
+
+	                            if(!ref.stop){
+	                                // Mode
+	                                if(!ref.modes[ref.mode]()){
+	                                    ref.mode = 'multiply';
+	                                }
+
+	                                setTimeout(function(){
+	                                        ref.__objects.$loButton.trigger('click');
+	                                }, ref.getRandomWait());
+	                            }else{
+	                            	ref.stop = false;
+	                            	ref.stopped = false;
+	                            	console.log("%cStopped",'color : #FF0000');
+	                            	return;
+	                            }
+                     		}
+
+                     		if($(event.currentTarget).attr('class') == "GoodNumber"){// Win
+                     			ref.total_wins++;
+
+                                if(ref.highest_win < parseFloat(ref.__objects.betAmount.val())){
+                                    ref.highest_win = parseFloat(ref.__objects.betAmount.val());
+                                }
+
+                                ref.showLogs();
+                                ref.profit = parseFloat(ref.__objects.balance.html()) - ref.initialValue;
+                                ref.addData([ref.totalBets++,ref.profit]);
+                                
+                                if( ref.iHaveEnoughMoni() ){
+                                        //console.log('You WON! But don\'t be greedy. Restarting!');
+                                        ref.reset();
+                                        if( ref.stopped ){
+                                        	console.log("%cStopped",'color : #FF0000');
+                                        	ref.stopped = false;
+                                        	return false;
+                                        }
+                                }
+                                else{
+                                	console.log('You WON! Betting again');
+                                }
+                                setTimeout(function(){
+                                        ref.__objects.$loButton.trigger('click');
+                                }, ref.getRandomWait());
+                     		}
+                     	});
+
+
+
+                     	//init loop
+                     	ref.reset();
+	                    ref.__objects.$loButton.trigger('click');
+                     }
+                },
+                "primedice":{
+                	  balance: $('#balance'),
+                	$loButton: $('#double_your_btc_bet_lo_button'),
                     $hiButton: $('#double_your_btc_bet_hi_button'),
                     container: $("#bet_history_table"), // Chart Container
-                    betAmount: $('#double_your_btc_stake')
+                    betAmount: $('#double_your_btc_stake'),
+                     gameLoop: function(){
+
+                     }
                 }
-            },
-            
+            }            
         };
         
         // You can also receive properties for custom use
         __clearObj(obj,privateVariables);// Prevents obj from changing private properties
         __copyObj(defaultValues, privateVariables, obj, this);
 
+        var ref = this;// For nested objects
         Object.defineProperties(this,{
+        	__objects:{value: this.sites[this.site[0]],
+        		writable:true
+        	},
+        	resolveSite:{value:
+        		function(){
+        			var splitURL = document.URL.split(/[.//]/);
+        			for(var s of Object.keys(this.sites)){
+        				var rt = splitURL.find(function(val){
+        					if(s == val) return true;
+        				});
+        				if(rt){
+        					this.site = [s];
+        					this.__objects = this.sites[this.site[0]];
+        					return this.__objects;
+        				}
+        			}
+
+        			//return undefined
+        		}
+        	},
             modes:{value:
                 {
                     multiply: 
                     function(){
-                        var current = $('#double_your_btc_stake').val();
+                        //var current = $('#double_your_btc_stake').val();
+                        console.log(ref.__objects);
+                        var current = ref.__objects.betAmount.val();
                         var multiply = (current * 2).toFixed(8);
-                        $('#double_your_btc_stake').val(multiply);
+                        //$('#double_your_btc_stake').val(multiply);
+                        ref.__objects.betAmount.val(multiply);
                     },
                     fibonacci:
                     function(){
                         //var current = $('#double_your_btc_stake').val();
-                        var total = r_fibonacci(this.count_lose) * this.startValue;
-                        $('#double_your_btc_stake').val(total);
+                        var total = r_fibonacci(ref.count_lose) * ref.startValue;
+                        ref.__objects.betAmount.val(total);
                         
                         function r_fibonacci(n){
                                 if(n == 1 || n == 2)
@@ -109,10 +308,18 @@ function FreeBotCoin(obj){ // obj contains variables
             },
             startGame: {value:
                 function(){
-                    this.initialValue = parseFloat($("#balance").html());
+                	this.resolveSite();
+                    this.addChart();
+                    console.log('Game started!');
+                    this.__objects.gameLoop();
+                  }
+            },
+            addChart: {value:
+            	function(){
+            		this.initialValue = parseFloat(this.__objects.balance.html());
                     console.log(this.initialValue);
                     if(this.chart == null){
-                            this.sites[this.site].container.prepend("<div class='plot'></div>");
+                            this.__objects.container.prepend("<div class='plot'></div>");
                             $(".plot").css({"width":"100%","height":"300px"});
                             var options = {
                                     series: {
@@ -127,122 +334,45 @@ function FreeBotCoin(obj){ // obj contains variables
                             };
                             this.chart = $.plot($(".plot"),[[]],options);
                     }
-                    var ref = this;
-                    
-                    console.log('Game started!');
-
-                    function showLogs(){
-                        console.clear();
-                        ref.wagered += parseFloat(ref.sites[ref.site].betAmount.val());
-                        console.log("Beginning Balance: " + ref.initialValue);
-                        console.log("Round: " + ref.totalBets + " / " + undefined);
-                        console.log("Profit: " + ref.profit.toFixed(8) + " BTC");
-                        console.log("Wagered: " + ref.wagered.toFixed(8))
-                        console.log('%cWin: ' + ref.total_wins + ' %cLost: ' + ref.total_loses, 'color: #007a5c', 'color: #FF0000');
-                        console.log('%cHighest bet: ' + ref.highest_win.toFixed(8) + ' %c' + ref.highest_lose.toFixed(8), 'color: #007a5c', 'color: #FF0000');
-                    }
-
-                    // Unbind old shit
-                    $('#double_your_btc_bet_lose').unbind();
-                    $('#double_your_btc_bet_win').unbind();
-                    // Loser
-                    $('#double_your_btc_bet_lose').bind("DOMSubtreeModified",function(event){
-                            if( $(event.currentTarget).is(':contains("lose")') )
-                            {             
-                                    ref.total_loses++;
-                                    
-                                    if(ref.highest_lose < parseFloat(ref.sites[ref.site].betAmount.val())){
-                                        ref.highest_lose = parseFloat(ref.sites[ref.site].betAmount.val());
-                                    }                                    
-
-                                    showLogs();
-                                    ref.profit = parseFloat($("#balance").html()) - ref.initialValue;
-                                    ref.addData([ref.totalBets++,ref.profit]);
-                                    
-                                    // Mode
-                                    if(!ref.modes[ref.mode]()){
-                                        ref.mode = 'multiply';
-                                    }
-
-                                    setTimeout(function(){
-                                            ref.sites[ref.site].$loButton.trigger('click');
-                                    }, ref.getRandomWait());
-                            }
-                    });
-
-
-                   
-                    // Winner
-                    $('#double_your_btc_bet_win').bind("DOMSubtreeModified",function(event){
-                            if( $(event.currentTarget).is(':contains("win")') )
-                            {
-                                    ref.total_wins++;
-
-                                    if(ref.highest_win < parseFloat(ref.sites[ref.site].betAmount.val())){
-                                        ref.highest_win = parseFloat(ref.sites[ref.site].betAmount.val());
-                                    }
-
-                                    showLogs();
-                                    ref.profit = parseFloat($("#balance").html()) - ref.initialValue;
-                                    ref.addData([ref.totalBets++,ref.profit]);
-                                    
-                                    if( ref.stopBeforeRedirect() )
-                                    {
-                                            return;
-                                    }
-                                    if( ref.iHaveEnoughMoni() )
-                                    {
-                                            //console.log('You WON! But don\'t be greedy. Restarting!');
-                                            ref.reset();
-                                            if( ref.stopped )
-                                            {
-                                                    console.log("%cStopped",'color : #FF0000');
-                                                    ref.stopped = false;
-                                                    return false;
-                                            }
-                                    }
-                                    else
-                                    {
-                                            console.log('You WON! Betting again');
-                                    }
-                                    setTimeout(function(){
-                                            ref.sites[ref.site].$loButton.trigger('click');
-                                    }, ref.getRandomWait());
-                            }
-                    });
-
-
-                    this.reset();
-                    this.sites[this.site].$loButton.trigger('click');
-                    
-                    
-
-                    
-                }
+            	}
             },
             addData: {value:
                 function(point){
                     if(point == undefined || point == null) return;
                     var series = this.chart.getData()[0].data;
                     if(series == undefined || series[0] == undefined)
-                            series = [point];
+                        series = [point];
                     else 
-                            series.push(point);
+                        series.push(point);
+
                     this.chart.setupGrid();
                     this.chart.setData([series]);
                     this.chart.draw();
                 }
             },
+            showLogs: {value:
+            	function(){
+            		console.clear();
+                	this.wagered += parseFloat(this.__objects.betAmount.val()); // Logic error
+                    console.log("Beginning Balance: " + this.initialValue);
+                    console.log("Round: " + this.totalBets + " / " + undefined);
+                    console.log("Profit: " + this.profit.toFixed(8) + " BTC");
+                    console.log("Wagered: " + this.wagered.toFixed(8))
+                    console.log('%cWin: ' + this.total_wins + ' %cLost: ' + this.total_loses, 'color: #007a5c', 'color: #FF0000');
+                    console.log('%cHighest bet: ' + this.highest_win.toFixed(8) + ' %c' + this.highest_lose.toFixed(8), 'color: #007a5c', 'color: #FF0000');
+            	}
+            },
             stopGame: {value:
                 function(){
                     console.log('Game will stop soon! Let me finish.');
                     this.stopped = true;
+                    this.stop = true;
                 }
             },
             reset: {value:
                 function(){
                     this.count_lose = 1;
-                    $('#double_your_btc_stake').val(this.startValue);
+                    this.__objects.betAmount.val(this.startValue);
                 }
             },
             deexponentize: {value:
@@ -252,19 +382,19 @@ function FreeBotCoin(obj){ // obj contains variables
             },
             iHaveEnoughMoni: {value:
                 function(){
-                    var balance = this.deexponentize(parseFloat($('#balance').text()));
-                    var current = this.deexponentize($('#double_your_btc_stake').val());
+                    var balance = this.deexponentize(parseFloat(this.__objects.balance.text()));
+                    var current = this.deexponentize(this.__objects.betAmount.val());
                     return ((balance*2)/100) * (current*2) > this.stopPercentage/100;
                 }
             },
-            stopBeforeRedirect: {value:
+            stopBeforeRedirect: {value://Function only for Freebitco.in 
                 function(){
                     var minutes = parseInt($('title').text());
                     if( minutes < this.stopBefore )
                     {
-                            console.log('Approaching redirect! Stop the game so we don\'t get redirected while loosing.');
-                            this.stopGame();
-                            return true;
+                    	console.log('Approaching redirect! Stop the game so we don\'t get redirected while loosing.');
+                    	this.stopGame();
+                    	return true;
                     }
                     return false;
                 }
