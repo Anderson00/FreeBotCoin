@@ -4,13 +4,13 @@ Bot bet
 
 > **Suports:**
 > - Chart.
-> - Sites: FreeBitco.in (for a while).
+> - Sites: FreeBitco.in, 999dice.com (for a while).
 > - Two betting modes: Multply e Fibonacci.
 
 
 > **Will supports:**
 > - Chart improved.
-> - Other betting sites like: 999dice, ESPORTSPLUS.ME, csgo roll and others.
+> - Other betting sites like: primeDice and others.
 > - Several ways to bet like: fibonacci, Martingale, Labouchere and others.
 > - Menu.
 
