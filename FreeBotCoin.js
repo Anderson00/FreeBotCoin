@@ -38,6 +38,7 @@ function FreeBotCoin(obj){ // obj contains variables
         var privateVariables = {
             stopped: false, //Stop only when win
             stop:false, //Stop immediately
+            timeReached: false,
             chart: null,
             initialValue: 0,
             profit: 0, // Amount win on this session
@@ -56,6 +57,7 @@ function FreeBotCoin(obj){ // obj contains variables
         var defaultValues = {
             startValue: '0.00000001',
             mode: 'multiply',
+            finalTime: 0, //Time in ms to stop betting
             stopPercentage: 0.001,
             maxWait: 500,     
             stopBefore: 3, // In Minutes  
@@ -74,7 +76,8 @@ function FreeBotCoin(obj){ // obj contains variables
 	                    // Loser
 	                    $('#double_your_btc_bet_lose').bind("DOMSubtreeModified",function(event){ // DOMSubtreeModified deprecated
 	                            if( $(event.currentTarget).is(':contains("lose")') )
-	                            {             
+	                            {         
+	                            	ref.verifyTime();    
 	                                ref.total_loses++;
 	                                
 	                                if(ref.highest_lose < parseFloat(ref.__objects.betAmount.val())){
@@ -109,6 +112,8 @@ function FreeBotCoin(obj){ // obj contains variables
 	                    $('#double_your_btc_bet_win').bind("DOMSubtreeModified",function(event){
 	                            if( $(event.currentTarget).is(':contains("win")') )
 	                            {
+	                            	ref.verifyTime();
+
 	                                ref.total_wins++;
 
 	                                if(ref.highest_win < parseFloat(ref.__objects.betAmount.val())){
@@ -118,6 +123,14 @@ function FreeBotCoin(obj){ // obj contains variables
 	                                ref.showLogs();
 	                                ref.profit = parseFloat(ref.__objects.balance.html()) - ref.initialValue;
 	                                ref.addData([ref.totalBets++,ref.profit]);
+
+	                                
+	                                if(ref.stop){
+	                                	console.log("%cStopped",'color : #FF0000');
+	                                    ref.stopped = false;
+	                                    ref.stop = false;
+	                                    return;
+	                                }
 	                                
 	                                if( ref.stopBeforeRedirect() )
 	                                {
@@ -170,7 +183,8 @@ function FreeBotCoin(obj){ // obj contains variables
                      	$('#LastBetInfoContainer').unbind();
 
                      	$('#LastBetInfoContainer').bind("classChanged", function(event){
-                     		console.log(event);
+                     		view.recalculateBetParams(); // site function update views
+
                      		if($(event.currentTarget).attr('class') == "BadNumber"){// Lose
                      			ref.total_loses++;
 	                                
@@ -226,6 +240,8 @@ function FreeBotCoin(obj){ // obj contains variables
                                         ref.__objects.$loButton.trigger('click');
                                 }, ref.getRandomWait());
                      		}
+
+                     		view.recalculateBetParams(); // site function update views
                      	});
 
 
@@ -279,7 +295,6 @@ function FreeBotCoin(obj){ // obj contains variables
                     multiply: 
                     function(){
                         //var current = $('#double_your_btc_stake').val();
-                        console.log(ref.__objects);
                         var current = ref.__objects.betAmount.val();
                         var multiply = (current * 2).toFixed(8);
                         //$('#double_your_btc_stake').val(multiply);
@@ -308,16 +323,42 @@ function FreeBotCoin(obj){ // obj contains variables
             },
             startGame: {value:
                 function(){
+                	var now = new Date().valueOf();
+                	this.finalTime = (this.finalTime > now)? this.finalTime : 0;
+
                 	this.resolveSite();
                     this.addChart();
                     console.log('Game started!');
                     this.__objects.gameLoop();
                   }
             },
+            verifyConditions: {value:
+            	function(){
+            		this.verifyTime();
+            		this.verifyBalance();
+            	}
+            },
+            verifyTime: {value:
+            	function(){
+            		var now = new Date().valueOf();
+            		if(this.finalTime && now >= this.finalTime){
+            			this.timeReached = true;
+            			this.finalTime = 0; // ensures that you can still call startGame();
+            			this.stopGame();            			
+            		}
+            	}
+            },
+            verifyBalance: {value:
+            	function(){
+            		var balance = convertToSatoshi(parseFloat(this.__objects.balance.text()));
+            		if(balance <= minBalance){
+            			this.stopGame();
+            		}
+            	}
+            },
             addChart: {value:
             	function(){
             		this.initialValue = parseFloat(this.__objects.balance.html());
-                    console.log(this.initialValue);
                     if(this.chart == null){
                             this.__objects.container.prepend("<div class='plot'></div>");
                             $(".plot").css({"width":"100%","height":"300px"});
@@ -360,6 +401,8 @@ function FreeBotCoin(obj){ // obj contains variables
                     console.log("Wagered: " + this.wagered.toFixed(8))
                     console.log('%cWin: ' + this.total_wins + ' %cLost: ' + this.total_loses, 'color: #007a5c', 'color: #FF0000');
                     console.log('%cHighest bet: ' + this.highest_win.toFixed(8) + ' %c' + this.highest_lose.toFixed(8), 'color: #007a5c', 'color: #FF0000');
+                    if(this.timeReached)
+                    	console.log('%cTime reached, stop', 'color: #007a5c');
             	}
             },
             stopGame: {value:
@@ -379,6 +422,11 @@ function FreeBotCoin(obj){ // obj contains variables
                 function(number){
                     return number * 1000000;
                 }
+            },
+            convertToSatoshi:{value:
+            	function(number){
+            		return number*100000000;
+            	}
             },
             iHaveEnoughMoni: {value:
                 function(){
@@ -427,7 +475,18 @@ function FreeBotCoin(obj){ // obj contains variables
         }
         if(!bool) return false;
         return destiny;
-    } 
-        
+    }         
 }
-var freeBotCoin = new FreeBotCoin().startGame();
+
+var freeBotCoin = new FreeBotCoin();
+freeBotCoin.startGame();
+/*------ Stop Time ------
+var now = new Date();
+now.setSeconds(now.getSeconds()+30);
+freeBotCoin.finalTime = now.valueOf();
+freeBotCoin.startGame();
+
+*/
+//freeBotCoin.stopGame(); // Stop Game
+//var freeBotCoin = new FreeBotCoin({startValue:'0.00000001', mode:'multiply'});
+//freeBotCoin.startGame();
