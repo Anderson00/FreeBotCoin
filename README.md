@@ -1,6 +1,9 @@
 # FreeBotCoin
-Bot bet
+**Multiply mode**
 ![alt text](screenshots/bootFREEBETCO.png "screenshot")
+
+**Fibonacci mode**
+![alt text](screenshots/fibonacci.png "screenshot")
 
 > **Suports:**
 > - Chart.
