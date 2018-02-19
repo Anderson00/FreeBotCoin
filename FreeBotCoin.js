@@ -44,7 +44,7 @@ function FreeBotCoin(obj){ // obj contains variables
             profit: 0, // Amount win on this session
             wagered: 0,
             totalBets: 0,
-            count_lose: 1, // Number of consectuve losses
+            count_lose: 0, // Number of consectuve losses
             total_wins: 0,
             total_loses: 0,
             highest_win: 0,
@@ -76,8 +76,9 @@ function FreeBotCoin(obj){ // obj contains variables
 	                    // Loser
 	                    $('#double_your_btc_bet_lose').bind("DOMSubtreeModified",function(event){ // DOMSubtreeModified deprecated
 	                            if( $(event.currentTarget).is(':contains("lose")') )
-	                            {         
+	                            {         	                            	
 	                            	ref.verifyTime();    
+	                            	ref.count_lose++;
 	                                ref.total_loses++;
 	                                
 	                                if(ref.highest_lose < parseFloat(ref.__objects.betAmount.val())){
@@ -90,9 +91,13 @@ function FreeBotCoin(obj){ // obj contains variables
 	                                
 	                                if(!ref.stop){
 		                                // Mode
-		                                if(!ref.modes[ref.mode]()){
-		                                    ref.mode = 'multiply';
-		                                }
+
+		                                //ensures that the mode is not invalid
+		                                if(ref.modes[ref.mode]){
+		                                    ref.modes[ref.mode]();
+		                                }else
+		                                	ref.mode = 'multiply';
+
 
 		                                setTimeout(function(){
 		                                        ref.__objects.$loButton.trigger('click');
@@ -112,8 +117,7 @@ function FreeBotCoin(obj){ // obj contains variables
 	                    $('#double_your_btc_bet_win').bind("DOMSubtreeModified",function(event){
 	                            if( $(event.currentTarget).is(':contains("win")') )
 	                            {
-	                            	ref.verifyTime();
-
+	                            	ref.verifyTime();	                            	
 	                                ref.total_wins++;
 
 	                                if(ref.highest_win < parseFloat(ref.__objects.betAmount.val())){
@@ -197,10 +201,13 @@ function FreeBotCoin(obj){ // obj contains variables
 	                            ref.addData([ref.totalBets++,ref.profit]);
 
 	                            if(!ref.stop){
+
 	                                // Mode
-	                                if(!ref.modes[ref.mode]()){
-	                                    ref.mode = 'multiply';
-	                                }
+	                                //ensures that the mode is not invalid
+		                                if(ref.modes[ref.mode]){
+		                                    ref.modes[ref.mode]();
+		                                }else
+		                                	ref.mode = 'multiply';
 
 	                                setTimeout(function(){
 	                                        ref.__objects.$loButton.trigger('click');
@@ -303,7 +310,7 @@ function FreeBotCoin(obj){ // obj contains variables
                     fibonacci:
                     function(){
                         //var current = $('#double_your_btc_stake').val();
-                        var total = r_fibonacci(ref.count_lose) * ref.startValue;
+                        var total = r_fibonacci(ref.count_lose+1) * parseFloat(ref.startValue);
                         ref.__objects.betAmount.val(total);
                         
                         function r_fibonacci(n){
@@ -414,7 +421,7 @@ function FreeBotCoin(obj){ // obj contains variables
             },
             reset: {value:
                 function(){
-                    this.count_lose = 1;
+                    this.count_lose = 0;
                     this.__objects.betAmount.val(this.startValue);
                 }
             },
@@ -488,5 +495,5 @@ freeBotCoin.startGame();
 
 */
 //freeBotCoin.stopGame(); // Stop Game
-//var freeBotCoin = new FreeBotCoin({startValue:'0.00000001', mode:'multiply'});
+//var freeBotCoin = new FreeBotCoin({startValue:'0.00000001', modes:'fibonacci'});
 //freeBotCoin.startGame();
