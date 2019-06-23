@@ -25,12 +25,3 @@ Navigate to supported websites and:
 * Sign in
 * Right click anywhere on the site -> choose "inspect element" -> go to "console" tab
 * Paste the script into the console and hit enter
-
-<h2>Donating</h2>
-
-Any value is accepted
-
-<p align="center"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/64px-Bitcoin.svg.png"/>BitCoin: 1Kr7fr3MhQHetVE467mVCLjcAQxYg7wbUx</p>
-
-
-I'll bet your donation and reward you in the future.
