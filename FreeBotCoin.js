@@ -40,6 +40,7 @@ function FreeBotCoin(obj){ // obj contains variables
             stop:false, //Stop immediately
             timeReached: false,
             chart: null,
+            buttons:{start:null, stop:null, reset:null, clear:null},
             initialValue: 0,
             profit: 0, // Amount win on this session
             wagered: 0,
@@ -335,8 +336,9 @@ function FreeBotCoin(obj){ // obj contains variables
 
                 	this.resolveSite();
                     this.addChart();
+                    this.addButtons();
                     console.log('Game started!');
-                    this.__objects.gameLoop();
+                    //this.__objects.gameLoop();
                   }
             },
             verifyConditions: {value:
@@ -367,7 +369,7 @@ function FreeBotCoin(obj){ // obj contains variables
             	function(){
             		this.initialValue = parseFloat(this.__objects.balance.html());
                     if(this.chart == null){
-                            this.__objects.container.prepend("<div class='plot'></div>");
+                            this.__objects.container.prepend("<div class='container_bot'><div class='plot'></div></div>");
                             $(".plot").css({"width":"100%","height":"300px"});
                             var options = {
                                     series: {
@@ -383,6 +385,91 @@ function FreeBotCoin(obj){ // obj contains variables
                             this.chart = $.plot($(".plot"),[[]],options);
                     }
             	}
+            },
+            addButtons: {value:
+                function(){
+                    var _this = this;
+                    if(this.buttons.start == null){
+                        this.buttons.start = $('.plot').parent().append('<div class="start_bt_bot">Start</div>')
+
+                        $('.start_bt_bot').css({
+                            "box-shadow": "inset 0 1px 0 0 #d8eeda",
+                            "text-shadow": "0 0 2px #022602",
+                            "background": "linear-gradient(to bottom,#0CCF16 5%,#057F0B 100%)",
+                            "border": "1px solid #43a047",
+                            "padding": "14px",
+                            "color": "#fff",
+                            "cursor": "pointer",
+                            "width": "120px",
+                            "font-size": "15px",
+                            "font-weight": "700",
+                            "text-transform": "uppercase",
+                            "margin": "10px",
+                            "border-radius": "3px",
+                            "float": "left",
+                            "text-align": "center"
+                        })
+                        //TODO: Hover in buttons;
+
+                        $('.start_bt_bot').click(function(){
+                            _this.__objects.gameLoop();
+                        })
+                    }
+
+                    if(this.buttons.stop == null){
+                        this.buttons.stop = $('.plot').parent().append('<div class="stop_bt_bot">Stop</div>')
+
+                        $('.stop_bt_bot').css({
+                            "box-shadow": "inset 0 1px 0 0 #d8eeda",
+                            "text-shadow": "0 0 2px #022602",
+                            "background": "linear-gradient(to bottom,#C4302B 5%,#9B111E 100%)",
+                            "border": "1px solid #43a047",
+                            "padding": "14px",
+                            "color": "#fff",
+                            "cursor": "pointer",
+                            "width": "120px",
+                            "font-size": "15px",
+                            "font-weight": "700",
+                            "text-transform": "uppercase",
+                            "margin": "10px",
+                            "border-radius": "3px",
+                            "float": "left",
+                            "text-align": "center"
+                        })
+                        //TODO: Hover in buttons;
+
+                        $('.stop_bt_bot').click(function (){
+                            _this.stopGame();
+                        })
+                    }
+
+                    if(this.buttons.reset == null){
+                        this.buttons.reset = $('.plot').parent().append('<div class="reset_bt_bot">Reset</div>')
+
+                        $('.reset_bt_bot').css({
+                            "box-shadow": "inset 0 1px 0 0 #d8eeda",
+                            "text-shadow": "0 0 2px #022602",
+                            "background": "linear-gradient(to bottom,#0CCF16 5%,#057F0B 100%)",
+                            "border": "1px solid #43a047",
+                            "padding": "14px",
+                            "color": "#fff",
+                            "cursor": "pointer",
+                            "width": "120px",
+                            "font-size": "15px",
+                            "font-weight": "700",
+                            "text-transform": "uppercase",
+                            "margin": "10px",
+                            "border-radius": "3px",
+                            "float": "left",
+                            "text-align": "center"
+                        })
+                        //TODO: Hover in buttons;
+
+                        $('.reset_bt_bot').click(function (){
+                            _this.reset();
+                        })
+                    }
+                }
             },
             addData: {value:
                 function(point){
@@ -404,6 +491,7 @@ function FreeBotCoin(obj){ // obj contains variables
                 	this.wagered += parseFloat(this.__objects.betAmount.val()); // Logic error
                     console.log("Beginning Balance: " + this.initialValue);
                     console.log("Round: " + this.totalBets + " / " + undefined);
+                    console.log("Bet: " + this.__objects.betAmount.val());
                     console.log("Profit: " + this.profit.toFixed(8) + " BTC");
                     console.log("Wagered: " + this.wagered.toFixed(8))
                     console.log('%cWin: ' + this.total_wins + ' %cLost: ' + this.total_loses, 'color: #007a5c', 'color: #FF0000');
@@ -422,6 +510,7 @@ function FreeBotCoin(obj){ // obj contains variables
             reset: {value:
                 function(){
                     this.count_lose = 0;
+
                     this.__objects.betAmount.val(this.startValue);
                 }
             },
